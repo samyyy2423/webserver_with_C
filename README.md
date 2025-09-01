@@ -1,8 +1,5 @@
-Absolutely—here’s a warmer, more human-friendly README that matches the files and keeps setup simple.
 
-## README.md
-
-# Tiny C Web Server
+#C Web Server
 
 A small project: a simple HTTP server written in C that serves a couple of HTML pages and a CSS file. It’s great for learning sockets, basic HTTP, and a sprinkle of routing without big frameworks.[1][2][3]
 
