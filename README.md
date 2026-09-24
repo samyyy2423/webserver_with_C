@@ -1,58 +1,40 @@
+# C Web Server
 
-#C Web Server
+A small HTTP server written from scratch in C: it opens a TCP socket, parses the request line, looks the
+path up in a binary-search-tree router, and serves HTML templates and a stylesheet. Built to learn
+sockets, HTTP and routing without a framework.
 
-A small project: a simple HTTP server written in C that serves a couple of HTML pages and a CSS file. It’s great for learning sockets, basic HTTP, and a sprinkle of routing without big frameworks.[1][2][3]
+## What's inside
 
-## What’s inside
+| File | Role |
+|------|------|
+| `src/HTTP_Server.c`, `include/HTTP_Server.h` | Creates the TCP socket, binds the port, listens |
+| `src/main.c` | Accept loop: reads the request, parses the first line, routes, sends the response |
+| `src/Routes.c`, `include/Routes.h` | Binary search tree mapping paths (`/`, `/about`) to templates |
+| `src/Response.c`, `include/Response.h` | Reads a file into memory for the response body |
+| `templates/` | `index.html`, `about.html`, `404.html` |
+| `static/` | `index.css`, served under `/static/` |
 
-- HTTP_Server.{h,c}: opens a TCP socket, binds a port, and listens for connections.
-- main.c: accepts a client, parses the first request line, matches a route, and sends back a response.
-- Routes.{h,c}: tiny binary search tree to register and look up routes like “/” and “/about”.
-- Response.{h,c}: reads a file into memory so it can be sent in the HTTP response.
-- templates/: index.html, about.html, 404.html — the pages shown for /, /about, and unknown routes.
-- static/: index.css — a single stylesheet that can be requested under /static/.
-- compile_commands.json: handy for editors and tools that use clangd or ccls.
+## Build and run
 
-## Quick start
+```bash
+make            # builds ./server.o
+./server.o      # listens on port 6969
+```
 
-1) Create folders:
-- mkdir -p include src templates static
+Then open <http://127.0.0.1:6969/> or:
 
-2) Place files:
-- include: HTTP_Server.h, Routes.h, Response.h
-- src: HTTP_Server.c, Routes.c, Response.c, main.c
-- templates: index.html, about.html, 404.html
-- static: index.css
+```bash
+curl -v http://127.0.0.1:6969/
+curl -v http://127.0.0.1:6969/about
+```
 
-3) Build:
-- gcc -Iinclude -Wall -Wextra -Wpedantic -O2 -g -o websrv \
-  src/HTTP_Server.c src/Routes.c src/Response.c src/main.c
+Unknown paths fall back to `templates/404.html`.
 
-4) Run:
-- ./websrv
-- Open http://127.0.0.1:6969/ in a browser or:
-  - curl -v http://127.0.0.1:6969/
-  - curl -v http://127.0.0.1:6969/about
+## Known limitations / next steps
 
-## How routing works
-
-- Routes are registered in main.c with a tiny BST:
-  - “/” -> templates/index.html
-  - “/about” -> templates/about.html
-- Anything else falls back to templates/404.html.
-
-Static files
-- Requests containing “/static/” are meant to serve from ./static (currently hardcoded to index.css). It’s a good place to add images, CSS, or JS later.
-
-## Notes and next steps
-
-This code is intentionally minimal to keep the learning curve gentle. A few improvements worth tackling next.
-- Send a proper Content-Length and Content-Type header.
-- Handle errors from socket(), bind(), listen(), accept(), read(), send().
-- Parse the request line more carefully (CRLF, method/path) and avoid fragile strtok usage.
-- Generalize static file serving and prevent “..” path traversal.
-- Replace strcat with snprintf to avoid buffer overflows.
-
-Want help polishing those? Happy to provide small patches or a PR-style diff to make it production-friendlier while staying simple.
-
-Thanks for checking this out
+- Send `Content-Length` and `Content-Type` headers.
+- Check return values of `socket()`, `bind()`, `listen()`, `accept()`, `read()`, `send()`.
+- Parse the request line strictly (CRLF, method, path) instead of `strtok`.
+- Generalise static-file serving and block `..` path traversal.
+- Replace `strcat` with `snprintf` to rule out buffer overflows.
